@@ -2,6 +2,7 @@
 
 import asyncio
 import sys
+import time
 
 import cv2
 import numpy as np
@@ -10,6 +11,7 @@ sys.path.insert(0, '../lab4')
 import find_ball
 
 import cozmo
+from cozmo.util import degrees, distance_mm, speed_mmps, Pose
 
 try:
     from PIL import ImageDraw, ImageFont
@@ -59,6 +61,8 @@ async def run(robot: cozmo.robot.Robot):
 
 
     try:
+        await robot.set_head_angle(degrees(0)).wait_for_completed()
+        robot.move_lift(-3)
 
         while True:
             #get camera image
@@ -68,12 +72,35 @@ async def run(robot: cozmo.robot.Robot):
             opencv_image = cv2.cvtColor(np.asarray(event.image), cv2.COLOR_RGB2GRAY)
 
             #find the ball
-            ball = find_ball.find_ball(opencv_image)
+            ball = find_ball.find_ball(opencv_image, 21, 4.8, 10)
 
             #set annotator ball
             BallAnnotator.ball = ball
 
             ## TODO: ENTER YOUR SOLUTION HERE
+
+            if ball is not None:
+                print("Ball:", ball)
+                #find_ball.display_circles(opencv_image, [ball])
+
+            if ball is not None and ball[2] > 90:
+                #If we are close enough to ball, lift the arms
+                robot.move_lift(3)
+                break
+            elif ball is not None:
+                #Turn in direction of ball
+                width, height = opencv_image.shape
+                angle = None
+                if width / 2 - ball[0] > 10:
+                    angle = 5
+                elif ball[0] - width / 2 > 10:
+                    angle = -5
+                if angle is not None:
+                    await robot.turn_in_place(degrees(angle)).wait_for_completed()
+
+                await robot.drive_straight(distance_mm(50), speed_mmps(50)).wait_for_completed()
+            else:
+                await robot.turn_in_place(degrees(30)).wait_for_completed()
 
 
     except KeyboardInterrupt:

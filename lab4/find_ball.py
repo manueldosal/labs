@@ -12,7 +12,7 @@ except ImportError:
 	sys.exit('install Pillow to run this code')
 
 
-def find_ball(opencv_image, debug=False):
+def find_ball(opencv_image, filterValue, houghCirclesDp, houghCirclesMinDist, debug=False):
 	"""Find the ball in an image.
 		
 		Arguments:
@@ -26,6 +26,21 @@ def find_ball(opencv_image, debug=False):
 	ball = None
 	
 	## TODO: INSERT YOUR SOLUTION HERE
+	filteredImage = cv2.medianBlur(opencv_image, filterValue)
+
+	#HoughCircles(image, method, dp, minDist)
+	circles = cv2.HoughCircles(filteredImage, cv2.HOUGH_GRADIENT, houghCirclesDp, houghCirclesMinDist)
+	#print("CIRCLES: ", circles)
+
+	if circles is not None and len(circles.shape) == 3 and circles.shape[2] == 3:
+		#circles is a three dimiensional array. Get the position at 0.
+		circlesArray = circles[0]
+
+		if debug:
+			display_circles(filteredImage, circlesArray)
+
+		for (x, y, r) in circlesArray:
+			return [x, y, r]
 	
 	return ball
 

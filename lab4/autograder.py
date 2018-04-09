@@ -25,7 +25,7 @@ for filedata in grid_data:
 	opencv_image = cv2.imread("./imgs/" + file, cv2.COLOR_GRAY2RGB)
 	 
 	#try to find the ball in the image
-	ball = find_ball.find_ball(opencv_image)
+	ball = find_ball.find_ball(opencv_image, 21, 4.8, 10)
 	print(file, ball)
 	
 	if ball is None:

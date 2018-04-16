@@ -26,10 +26,13 @@ def find_ball(opencv_image, filterValue, houghCirclesDp, houghCirclesMinDist, de
 	ball = None
 	
 	## TODO: INSERT YOUR SOLUTION HERE
-	filteredImage = cv2.medianBlur(opencv_image, filterValue)
+
+	#filteredImage = cv2.medianBlur(opencv_image, 21)
+	filteredImage = cv2.medianBlur(opencv_image, 27)
 
 	#HoughCircles(image, method, dp, minDist)
-	circles = cv2.HoughCircles(filteredImage, cv2.HOUGH_GRADIENT, houghCirclesDp, houghCirclesMinDist)
+	# (image, method, houghCirclesDp, houghCirclesMinDist)
+	circles = cv2.HoughCircles(filteredImage, cv2.HOUGH_GRADIENT, 1, 20, param1=50,param2=25,minRadius=0,maxRadius=0)
 	#print("CIRCLES: ", circles)
 
 	if circles is not None and len(circles.shape) == 3 and circles.shape[2] == 3:

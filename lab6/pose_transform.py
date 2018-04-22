@@ -10,13 +10,21 @@ import cozmo
 import numpy
 from cozmo.util import degrees
 
-def get_relative_pose(object_pose, refrence_frame_pose):
+def get_relative_pose(object_pose, reference_frame_pose):
 	# ####
 	# TODO: Implement computation of the relative frame using numpy.
 	# Try to derive the equations yourself and verify by looking at
 	# the books or slides bfore implementing.
 	# ####
-	return None
+
+	#object_pose is the cube
+	#reference_frame_pose is the robot
+	#We just substract the reference pose from the object's pose.
+	positionX = object_pose.position.x - reference_frame_pose.position.x
+	positionY = object_pose.position.y - reference_frame_pose.position.y
+	positionZ = object_pose.position.z - reference_frame_pose.position.z
+
+	return [positionX, positionY, positionZ]
 
 def find_relative_cube_pose(robot: cozmo.robot.Robot):
 	'''Looks for a cube while sitting still, prints the pose of the detected cube

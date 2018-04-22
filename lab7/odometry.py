@@ -50,7 +50,11 @@ def get_front_wheel_radius():
 	# in millimeters. Write a comment that explains how you determined it and any
 	# computation you do as part of this function.
 	# ####
-	pass
+
+	# The radius was determined using empirical_measures.py.
+	# Cozmo drove 440 mm and its front wheel did 5 loops. Therefore, 440 / 5 = 88 mm per loop.
+	# Then radius = 88 / (2 * pi)
+	return 14
 
 def get_distance_between_wheels():
 	"""Returns the distance between the wheels of the Cozmo robot in millimeters."""
@@ -59,7 +63,18 @@ def get_distance_between_wheels():
 	# robot.drive_wheels() function. Write a comment that explains how you determined
 	# it and any computation you do as part of this function.
 	# ####
-	pass
+
+	# This was computed using empirical_measures.py
+	# Cozmo drove for 33 seconds with different speeds on each wheel.
+    # Left wheel: 30 mm/s, Right wheel: 20 mm/s.
+    # This generated a circle shape. The two circumferences formed with each wheel were computed.
+    # C_L = 30 * 33 = 990 mm
+    # C_R = 20 * 33 = 660 mm
+    # Then each radius was computed.
+    # r_L = 990 / (2 * pi) = 157.5
+    # r_R = 660 / (2* pi) = 105
+    # Then the radius is 157.5 - 105 = 52.5 mm
+	return 52.5
 
 def rotate_back_wheel(robot, angle_deg):
 	"""Rotates the back wheel of the robot by a desired angle.

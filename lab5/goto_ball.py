@@ -77,7 +77,6 @@ async def run(robot: cozmo.robot.Robot):
             #set annotator ball
             BallAnnotator.ball = ball
 
-            ## TODO: ENTER YOUR SOLUTION HERE
 
             if ball is not None:
                 print("Ball:", ball)

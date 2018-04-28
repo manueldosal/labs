@@ -25,7 +25,6 @@ def find_ball(opencv_image, debug=False):
 
 	ball = None
 	
-	## TODO: INSERT YOUR SOLUTION HERE
 	filteredImage = cv2.medianBlur(opencv_image, 27)
 
 	#HoughCircles(image, method, dp, minDist)

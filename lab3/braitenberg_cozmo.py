@@ -15,7 +15,6 @@ import sys
 
 def sense_brightness(image, columns):
 	'''Maps a sensor reading to a wheel motor command'''
-	## TODO: Test that this function works and decide on the number of columns to use
 
 	h = image.shape[0]
 	w = image.shape[1]
@@ -31,7 +30,7 @@ def sense_brightness(image, columns):
 
 def mapping_funtion(sensor_value):
 	'''Maps a sensor reading to a wheel motor command'''
-	## TODO: Define the mapping to obtain different behaviors.
+
 	motor_value = 0.1*sensor_value
 	return motor_value
 
@@ -62,7 +61,6 @@ async def braitenberg_machine(robot: cozmo.robot.Robot):
 		#print("sensor_left: " + str(sensor_left))
 
 		# Map the sensors to actuators
-		## TODO: You might want to switch which sensor is mapped to which motor.
 
 		# Let's write down all the cases:
 		# Case 1

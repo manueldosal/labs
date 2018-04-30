@@ -9,7 +9,7 @@ import asyncio
 import cozmo
 import numpy
 import math
-from cozmo.util import degrees
+from cozmo.util import degrees, Pose
 
 def get_relative_pose(object_pose, reference_frame_pose):
 	# ####
@@ -28,14 +28,14 @@ def get_relative_pose(object_pose, reference_frame_pose):
 	zC = object_pose.rotation.angle_z.degrees
 
 	#Debugging purposes----------------------------
-	print("yR:", xR, "yR:", yR, "zR:", zR, "xC:", xC, "yC:", yC, "zC:", zC)
+	#print("xR:", xR, "yR:", yR, "zR:", zR, "xC:", xC, "yC:", yC, "zC:", zC)
 	#---------------------------------------------
 
-	positionX = (xC - xR) * math.cos(zR) + (yC - yR) * math.sin(zR)
-	positionY = - (xC - xR) * math.sin(zR) + (yC - yR) * math.cos(zR)
+	positionX = (xC - xR) * math.cos(math.radians(zR)) + (yC - yR) * math.sin(math.radians(zR))
+	positionY = - (xC - xR) * math.sin(math.radians(zR)) + (yC - yR) * math.cos(math.radians(zR))
 	angleZ = zC - zR
 
-	return [positionX, positionY, angleZ]
+	return Pose(positionX, positionY, 0, angle_z=degrees(angleZ))
 
 def find_relative_cube_pose(robot: cozmo.robot.Robot):
 	'''Looks for a cube while sitting still, prints the pose of the detected cube

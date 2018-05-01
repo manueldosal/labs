@@ -119,7 +119,7 @@ def my_turn_in_place(robot, angle, speed):
 		speed -- Desired speed of the movement in degrees per second
 	"""
 	# ####
-	# TODO: Implement your version of a rotating in place function using the
+	# Implement your version of a rotating in place function using the
 	# robot.drive_wheels() function.
 	# ####
 
@@ -140,7 +140,7 @@ def my_go_to_pose1(robot, x, y, angle_z):
 		angle_z -- Desired rotation of the robot around the vertical axis in degrees
 	"""
 	# ####
-	# TODO: Implement a function that makes the robot move to a desired pose
+	# Implement a function that makes the robot move to a desired pose
 	# using the my_drive_straight and my_turn_in_place functions. This should
 	# include a sequence of turning in place, moving straight, and then turning
 	# again at the target to get to the desired rotation (Approach 1).
@@ -176,11 +176,61 @@ def my_go_to_pose2(robot, x, y, angle_z):
 		angle_z -- Desired rotation of the robot around the vertical axis in degrees
 	"""
 	# ####
-	# TODO: Implement a function that makes the robot move to a desired pose
+	# Implement a function that makes the robot move to a desired pose
 	# using the robot.drive_wheels() function to jointly move and rotate the 
 	# robot to reduce distance between current and desired pose (Approach 2).
 	# ####
-	pass
+
+	timePerIteration = 3
+	p1 = 0.5
+	p2 = 0.5
+	p3 = 0.5
+	errorDistance = 5
+	errorAngleInRadians = math.radians(10)
+	radius = get_front_wheel_radius()
+	distanceWheels = get_distance_between_wheels()
+
+	#Initial values for robot
+	xR = 0
+	yR = 0
+	thetaInRadians = 0
+	
+
+	while True:
+		distance = math.sqrt(math.pow(xR - x, 2) + math.pow(yR - y, 2))
+		bearing = math.atan2(y - yR, x - xR) - thetaInRadians
+		heading = math.radians(angle_z) - thetaInRadians
+
+		#Stop if we are in the desired pose
+		if distance < errorDistance and abs(heading) < errorAngleInRadians:
+			break
+
+		diffX = p1 * distance
+		diffTheta = p2*bearing + p3*heading
+
+		#Get wheels rotation
+		rotationLeft = (2 * diffX - diffTheta * distanceWheels) / (2 * radius)
+		rotationRight = (2 * diffX + diffTheta * distanceWheels) / (2 * radius)
+		print("Rotation. RotationLeft:", rotationLeft, "RotationRight:", rotationRight)
+		
+		#Compute the distance from the wheels rotation
+		distanceLeft = rotationLeft * radius
+		distanceRight = rotationRight * radius
+		print("Distance to drive. Left:", distanceLeft, ". Right:", distanceRight)
+
+		#Drive robot using timePerIteration
+		speedLeft = distanceLeft / timePerIteration
+		speedRight = distanceRight / timePerIteration
+		print("Speed. Left", speedLeft, "Right", speedRight)
+		robot.drive_wheels(speedLeft, speedRight, duration=timePerIteration + 0.65)
+		time.sleep(.1)
+
+		#Update robot pose
+		thetaInRadians += radius / distanceWheels * (rotationRight - rotationLeft)
+		xR += radius / 2 * (rotationLeft + rotationRight) * math.cos(bearing)
+		yR += radius / 2 * (rotationLeft + rotationRight) * math.sin(bearing)
+		print("New position. X:", xR, "Y:", yR, "Theta:", math.degrees(thetaInRadians))
+		print()
 
 def my_go_to_pose3(robot, x, y, angle_z):
 	"""Moves the robot to a pose relative to its current pose.
@@ -190,11 +240,16 @@ def my_go_to_pose3(robot, x, y, angle_z):
 		angle_z -- Desired rotation of the robot around the vertical axis in degrees
 	"""
 	# ####
-	# TODO: Implement a function that makes the robot move to a desired pose
+	# Implement a function that makes the robot move to a desired pose
 	# as fast as possible. You can experiment with the built-in Cozmo function
 	# (cozmo_go_to_pose() above) to understand its strategy and do the same.
 	# ####
-	pass
+	if(x < 0):
+		#Do approach 1
+		my_go_to_pose1(robot, x, y, angle_z)
+	else:
+		#Do approach 2
+		my_go_to_pose2(robot, x, y, angle_z)
 
 def run(robot: cozmo.robot.Robot):
 

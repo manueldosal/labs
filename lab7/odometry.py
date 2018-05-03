@@ -182,24 +182,25 @@ def my_go_to_pose2(robot, x, y, angle_z):
 	# ####
 
 	timePerIteration = 3
-	p1 = 0.5
-	p2 = 0.5
-	p3 = 0.5
-	errorDistance = 5
+	p1 = 0.6
+	p2 = 1
+	p3 = 1
+	errorDistance = 20
 	errorAngleInRadians = math.radians(10)
 	radius = get_front_wheel_radius()
 	distanceWheels = get_distance_between_wheels()
-
-	#Initial values for robot
-	xR = 0
-	yR = 0
-	thetaInRadians = 0
 	
-
 	while True:
+		xR = robot.pose.position.x
+		yR = robot.pose.position.y
+		thetaInRadians = robot.pose.rotation.angle_z.radians
+		print("Robot position. X:", xR, "Y:", yR, "Theta in degrees:", math.degrees(thetaInRadians))
+
 		distance = math.sqrt(math.pow(xR - x, 2) + math.pow(yR - y, 2))
 		bearing = math.atan2(y - yR, x - xR) - thetaInRadians
 		heading = math.radians(angle_z) - thetaInRadians
+		print("xR:", xR, "yR:", yR, "thetaInRadians:", thetaInRadians)
+		print("distance:", distance, "bearing:", bearing, "heading:", heading)
 
 		#Stop if we are in the desired pose
 		if distance < errorDistance and abs(heading) < errorAngleInRadians:
@@ -221,15 +222,15 @@ def my_go_to_pose2(robot, x, y, angle_z):
 		#Drive robot using timePerIteration
 		speedLeft = distanceLeft / timePerIteration
 		speedRight = distanceRight / timePerIteration
+
+		minSpeed = 10
+		if abs(speedLeft) < minSpeed or abs(speedRight) < minSpeed:
+			speedRight = speedRight * minSpeed / abs(speedLeft)
+			speedLeft = minSpeed if speedLeft > 0 else -minSpeed
+
 		print("Speed. Left", speedLeft, "Right", speedRight)
 		robot.drive_wheels(speedLeft, speedRight, duration=timePerIteration + 0.65)
 		time.sleep(.1)
-
-		#Update robot pose
-		thetaInRadians += radius / distanceWheels * (rotationRight - rotationLeft)
-		xR += radius / 2 * (rotationLeft + rotationRight) * math.cos(bearing)
-		yR += radius / 2 * (rotationLeft + rotationRight) * math.sin(bearing)
-		print("New position. X:", xR, "Y:", yR, "Theta:", math.degrees(thetaInRadians))
 		print()
 
 def my_go_to_pose3(robot, x, y, angle_z):
@@ -245,10 +246,12 @@ def my_go_to_pose3(robot, x, y, angle_z):
 	# (cozmo_go_to_pose() above) to understand its strategy and do the same.
 	# ####
 	if(x < 0):
-		#Do approach 1
-		my_go_to_pose1(robot, x, y, angle_z)
+		#Turn first to face target, and then do approach 2
+		angleToFaceTarget = math.atan2(y, x) * 180 / math.pi
+		my_turn_in_place(robot, angleToFaceTarget, 30)
+		my_go_to_pose2(robot, robot.pose.position.x, robot.pose.position.y, robot.pose.rotation.angle_z.degrees)
 	else:
-		#Do approach 2
+		#Do approach 2 directly
 		my_go_to_pose2(robot, x, y, angle_z)
 
 def run(robot: cozmo.robot.Robot):

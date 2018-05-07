@@ -126,6 +126,8 @@ class ParticleFilter:
 
 if __name__ == "__main__":
 
+    startTime = time.time()
+
     grid = CozGrid(Map_filename)
     
     # initial distribution assigns each particle an equal probability
@@ -190,3 +192,5 @@ if __name__ == "__main__":
     print("Max rotational error :", max_err_rot, "deg")
 
     print("\nscore =", score)
+
+    print("Running time:", time.time() - startTime)

@@ -69,6 +69,24 @@ def measurement_update(particles, measured_marker_list, grid):
     # Get the probability for each particle
     particleProbabilities = []
     for p in particles:
+
+        # Get particle's coordinates on the map
+        xP = p.x
+        yP = p.y
+        hP = p.h
+
+        #Get the markers in particle's frame 
+        particleMarkers = []
+        for marker in grid.markers:
+            # Get the map coordinates of the marker
+            m_xMap, m_yMap, m_hMap = parse_marker_info(marker[0], marker[1], marker[2])
+
+            # Convert the marker's coordinates into particle's coordinates
+            m_x = (m_xMap - xP) * math.cos(math.radians(hP)) + (m_yMap - yP) * math.sin(math.radians(hP))
+            m_y = - (m_xMap - xP) * math.sin(math.radians(hP)) + (m_yMap - yP) * math.cos(math.radians(hP))
+            m_h = diff_heading_deg(m_hMap, hP)
+
+            particleMarkers.append((m_x, m_y, m_h))
         
         #Handle the case where there are no measured markers by adding a random one
         #We just create a random particle and convert it to a measured marker
@@ -78,9 +96,11 @@ def measurement_update(particles, measured_marker_list, grid):
 
         measuredMarkersProbProduct = 1
         for measuredMarker in measured_marker_list:
+            #For each measured marker we compute the probability that the particle is actually seeing it.
             probSum = 0
 
-            for marker in grid.markers:
+            for marker in particleMarkers:
+                #For each marker in the grid, compute probability that it's actually the measured marker
                 probSum += getGaussianProb(measuredMarker, marker, p, grid)
             measuredMarkersProbProduct *= probSum
 
@@ -92,6 +112,7 @@ def measurement_update(particles, measured_marker_list, grid):
         # else:
         #     measuredMarkersProbProduct = float(1) / (math.fabs(measureMarkersLength - markersInCameraLength) + 1)
 
+        #Append the probability (weight) given to current particle
         particleProbabilities.append(measuredMarkersProbProduct)
 
     #Normalize probabilities to add up to 1
@@ -115,22 +136,13 @@ def getGaussianProb(measuredMarker, marker, p, grid):
 
     sigma = 2
 
-    # Get particle's coordinates on the map
-    xP = p.x
-    yP = p.y
-    hP = p.h
+    #probX = scipy.stats.norm.pdf(measuredMarker[0], loc=marker[0], scale=sigma)
+    #probY = scipy.stats.norm.pdf(measuredMarker[1], loc=marker[1], scale=sigma)
+    #probH = scipy.stats.norm.pdf(math.radians(measuredMarker[2]), loc=math.radians(marker[2]), scale=sigma)
 
-    # Get the map coordinates of the marker
-    m_xMap, m_yMap, m_hMap = parse_marker_info(marker[0], marker[1], marker[2])
+    probX = math.exp(-(measuredMarker[0]-marker[0])**2/(2 * sigma**2)) / float(math.sqrt(2*math.pi*sigma**2))
+    probY = math.exp(-(measuredMarker[1]-marker[1])**2/(2 * sigma**2)) / float(math.sqrt(2*math.pi*sigma**2))
+    probH = math.exp(-(measuredMarker[2]-marker[2])**2/(2 * sigma**2)) / float(math.sqrt(2*math.pi*sigma**2))
 
-    # Convert the marker's coordinates into particle's coordinates
-    m_x = (m_xMap - xP) * math.cos(math.radians(hP)) + (m_yMap - yP) * math.sin(math.radians(hP))
-    m_y = - (m_xMap - xP) * math.sin(math.radians(hP)) + (m_yMap - yP) * math.cos(math.radians(hP))
-    m_h = diff_heading_deg(m_hMap, hP)
-
-    probX = scipy.stats.norm.pdf(measuredMarker[0], loc=m_x, scale=sigma)
-    probY = scipy.stats.norm.pdf(measuredMarker[1], loc=m_y, scale=sigma)
-    probH = scipy.stats.norm.pdf(math.radians(measuredMarker[2]), loc=math.radians(m_h), scale=sigma)
-
-    return probX * probY * probH
+    return probX + probY + probH
 

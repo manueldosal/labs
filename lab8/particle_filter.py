@@ -68,52 +68,65 @@ def measurement_update(particles, measured_marker_list, grid):
     
     # Get the probability for each particle
     particleProbabilities = []
-    for p in particles:
 
-        # Get particle's coordinates on the map
-        xP = p.x
-        yP = p.y
-        hP = p.h
+    if len(measured_marker_list) > 0:
 
-        #Get the markers in particle's frame 
-        particleMarkers = []
-        for marker in grid.markers:
-            # Get the map coordinates of the marker
-            m_xMap, m_yMap, m_hMap = parse_marker_info(marker[0], marker[1], marker[2])
+        for p in particles:
 
-            # Convert the marker's coordinates into particle's coordinates
-            m_x = (m_xMap - xP) * math.cos(math.radians(hP)) + (m_yMap - yP) * math.sin(math.radians(hP))
-            m_y = - (m_xMap - xP) * math.sin(math.radians(hP)) + (m_yMap - yP) * math.cos(math.radians(hP))
-            m_h = diff_heading_deg(m_hMap, hP)
+            # Get particle's coordinates on the map
+            xP = p.x
+            yP = p.y
+            hP = p.h
 
-            particleMarkers.append((m_x, m_y, m_h))
+            #Get the markers in particle's frame 
+            particleMarkers = []
+            for marker in grid.markers:
+                # Get the map coordinates of the marker
+                m_xMap, m_yMap, m_hMap = parse_marker_info(marker[0], marker[1], marker[2])
+
+                # Convert the marker's coordinates into particle's coordinates
+                m_x = (m_xMap - xP) * math.cos(math.radians(hP)) + (m_yMap - yP) * math.sin(math.radians(hP))
+                m_y = - (m_xMap - xP) * math.sin(math.radians(hP)) + (m_yMap - yP) * math.cos(math.radians(hP))
+                m_h = diff_heading_deg(m_hMap, hP)
+
+                particleMarkers.append((m_x, m_y, m_h))
         
-        #Handle the case where there are no measured markers by adding a random one
-        #We just create a random particle and convert it to a measured marker
-        if len(measured_marker_list) == 0:
-            newP = Particle.create_random(7, grid)
-            measured_marker_list = [(newP[0].x, newP[0].y, newP[0].h)]
+            #Handle the case where there are no measured markers by adding a random one
+            #We just create a random particle and convert it to a measured marker
+            # if len(measured_marker_list) == 0:
+            #     newP = Particle.create_random(7, grid)
+            #     measured_marker_list = [(newP[0].x, newP[0].y, newP[0].h)]
 
-        measuredMarkersProbProduct = 1
-        for measuredMarker in measured_marker_list:
-            #For each measured marker we compute the probability that the particle is actually seeing it.
-            probSum = 0
+            measuredMarkersProbProduct = 1
+            for measuredMarker in measured_marker_list:
+                #For each measured marker we compute the probability that the particle is actually seeing it.
+                probSum = 0
 
-            for marker in particleMarkers:
-                #For each marker in the grid, compute probability that it's actually the measured marker
-                probSum += getGaussianProb(measuredMarker, marker, p, grid)
-            measuredMarkersProbProduct *= probSum
+                for marker in particleMarkers:
+                    #For each marker in the grid, compute probability that it's actually the measured marker
+                    probSum += getGaussianProb(measuredMarker, marker, p, grid)
+                measuredMarkersProbProduct *= probSum
 
-        # We can try alos something simpler
-        # measureMarkersLength = len(measured_marker_list)
-        # markersInCameraLength = len(p.read_markers(grid))
-        # if measureMarkersLength == markersInCameraLength:
-        #     measuredMarkersProbProduct = 1
-        # else:
-        #     measuredMarkersProbProduct = float(1) / (math.fabs(measureMarkersLength - markersInCameraLength) + 1)
+            # We can try alos something simpler
+            # measureMarkersLength = len(measured_marker_list)
+            # markersInCameraLength = len(p.read_markers(grid))
+            # if measureMarkersLength == markersInCameraLength:
+            #     measuredMarkersProbProduct = 1
+            # else:
+            #     measuredMarkersProbProduct = float(1) / (math.fabs(measureMarkersLength - markersInCameraLength) + 1)
 
-        #Append the probability (weight) given to current particle
-        particleProbabilities.append(measuredMarkersProbProduct)
+            #Append the probability (weight) given to current particle
+            particleProbabilities.append(measuredMarkersProbProduct)
+    else:
+        #Case where there are not measured markers
+        for p in particles:
+            #Check how likely is for this particle to not see any markers
+            markersList = p.read_markers(grid)
+            if(len(markersList) == 0):
+                particleProbabilities.append(1)
+            else:
+                particleProbabilities.append(1 / len(markersList))
+
 
     #Normalize probabilities to add up to 1
     normalizedProbabilities = [float(prob) / sum(particleProbabilities) for prob in particleProbabilities]

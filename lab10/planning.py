@@ -18,9 +18,77 @@ def astar(grid, heuristic):
         grid -- CozGrid instance to perform search on
         heuristic -- supplied heuristic function
     """
-        
-    pass # Your code here
 
+    start = grid._start
+
+    # Make the assumption that there is only one goal
+    goal = grid._goals[0]
+
+    # The nodes that are finished
+    closedSet = set()
+
+    # The nodes that need to be evaluated
+    openSet = set()
+    openSet.add(start)
+
+    # The previous node where the key node can be reached most efficiently
+    previousStep = {}
+
+    # Distance from start to node
+    gScore = {start : 0}
+
+    # Distance from start to goal when passing through a node
+    fScore = {start : heuristic(start, goal)}
+
+    # The current node that will traverse the grid
+    current = None
+
+    while len(openSet):
+        # Get the node in openSet with the lowest fScore value
+        lowestFScore = math.inf
+        for node in openSet:
+            if node in fScore and fScore[node] < lowestFScore:
+                current = node 
+
+        # Stop the loop and set the path
+        if current == goal:
+            break
+        
+        # Move current node to closed set
+        openSet.remove(current)
+        closedSet.add(current)
+        grid.addVisited(current)
+
+        for neighborObj in grid.getNeighbors(current):
+            neighbor = neighborObj[0]
+            distanceToNeighbor = neighborObj[1]
+
+            if neighbor in closedSet:
+                # Don't do anything if the node is already closed
+                continue
+
+            if neighbor not in openSet:
+                # Add neighbor if it hasn't been discovered yet
+                openSet.add(neighbor)
+
+            gScoreCurrent = gScore[current] if current in gScore else math.inf
+            gScoreNeighbor = gScore[neighbor] if neighbor in gScore else math.inf
+            tentativeGScore = gScoreCurrent +  distanceToNeighbor
+            if tentativeGScore >= gScoreNeighbor:
+                # This new path is not the most optimal
+                continue
+
+            # This new path is the best so far
+            previousStep[neighbor] = current
+            gScore[neighbor] = tentativeGScore
+            fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, goal)
+
+    #Let's construct the path
+    path = [current]
+    while current in previousStep:
+        current = previousStep[current]
+        path.insert(0, current)
+    grid.setPath(path)
 
 def heuristic(current, goal):
     """Heuristic function for A* algorithm
@@ -29,8 +97,8 @@ def heuristic(current, goal):
         current -- current cell
         goal -- desired goal cell
     """
-        
-    return 1 # Your code here
+
+    return math.sqrt(math.pow(current[0] - goal[0],2) + math.pow(current[1] - goal[1],2))
 
 
 def cozmoBehavior(robot: cozmo.robot.Robot):

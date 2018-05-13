@@ -48,7 +48,8 @@ def astar(grid, heuristic):
         lowestFScore = math.inf
         for node in openSet:
             if node in fScore and fScore[node] < lowestFScore:
-                current = node 
+                current = node
+                lowestFScore = fScore[node]
 
         # Stop the loop and set the path
         if current == goal:

@@ -141,7 +141,6 @@ def cozmoBehavior(robot: cozmo.robot.Robot):
 
         cubeObstacle = None
         try:
-            # TODO: Detect more than one obstacle.
             cubeObstacle = robot.world.wait_for_observed_light_cube(timeout=2)
         except asyncio.TimeoutError:
             print("No Cube obstacle was found")

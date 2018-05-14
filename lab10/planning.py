@@ -8,8 +8,8 @@ import threading
 from queue import PriorityQueue
 import math
 import cozmo
-
-
+from cozmo.util import degrees, Pose
+import asyncio
 
 def astar(grid, heuristic):
     """Perform the A* search algorithm on a defined grid
@@ -19,10 +19,10 @@ def astar(grid, heuristic):
         heuristic -- supplied heuristic function
     """
 
-    start = grid._start
+    start = grid.getStart()
 
     # Make the assumption that there is only one goal
-    goal = grid._goals[0]
+    goal = grid.getGoals()[0]
 
     # The nodes that are finished
     closedSet = set()
@@ -115,10 +115,114 @@ def cozmoBehavior(robot: cozmo.robot.Robot):
     """
         
     global grid, stopevent
-    
-    while not stopevent.is_set():
-        pass # Your code here
 
+    width = grid.width
+    height = grid.height
+    scale = grid.scale
+
+    startX = grid.getStart()[0]
+    startY = grid.getStart()[1]
+    
+    #Find Goal
+    robot.move_lift(-3)
+    robot.set_head_angle(degrees(0)).wait_for_completed()
+    cube1 = None
+
+    try:
+        cube1 = robot.world.wait_for_observed_light_cube(timeout=3)
+    except asyncio.TimeoutError:
+        print("No Cube was found. Need to go to the center of the grid")
+        
+    if cube1 is None or cube1.object_id != 1:
+        #Move to the center of the grid and turn around to search for the cube
+        robot.go_to_pose(Pose((width/2 - startX) * scale, (height/2 - startY) * scale, 0, angle_z=degrees(0)), relative_to_robot=True).wait_for_completed()
+        while(cube1 is None or cube1.object_id != 1):
+            robot.turn_in_place(degrees(20), speed=degrees(40)).wait_for_completed()
+            try:
+                cube1 = robot.world.wait_for_observed_light_cube(timeout=2)
+            except asyncio.TimeoutError:
+                print("Cube not found in this angle")
+
+    #Get cube's 1 coordinates and rotation
+    print("Found Cube 1:", cube1)
+    #Assumption: Cube's coordinates is global coordiantes (where Robot originally started)
+    xC = int(cube1.pose.position.x / scale) + startX
+    yC = int(cube1.pose.position.y / scale) + startY
+    angle_zC = cube1.pose.rotation.angle_z
+
+    # Make cube 1 an obstacle to avoid hitting it
+    addCubeObstacle(grid, (xC, yC))
+
+    #Compute the final goal since we found Cube 1
+    # This is the final distance where we want to finish from the cube
+    distanceToCube = 4
+    goalX = int(round(xC + distanceToCube * math.cos(angle_zC.radians)))
+    goalY = int(round(yC + distanceToCube * math.sin(angle_zC.radians)))
+    grid.addGoal((goalX, goalY))
+    print("Goal:", grid.getGoals()[0])
+
+    while not stopevent.is_set():
+
+        """Useful methods from Cozmo sdk
+            wait_for_observed_light_cube 
+            go_to_pose
+
+        """
+
+        #Update start coordinate to be current robot's pose
+        xR = int(robot.pose.position.x / scale) + startX
+        yR = int(robot.pose.position.y / scale) + startY
+        grid.setStart((xR, yR))
+
+        #Stop robot if we are close enough to cube 1.
+        numSquaresThreshold = 1
+        if math.sqrt(math.pow(goalX - xR, 2) + math.pow(goalY - yR, 2)) < numSquaresThreshold:
+            #Rotate the robot to face cube's face
+            degreesToTurn = normalizeAngle(angle_zC.degrees + 180 - robot.pose.rotation.angle_z.degrees)
+            print("degrees to turn:", degreesToTurn)
+            robot.turn_in_place(degrees(degreesToTurn), speed=degrees(40)).wait_for_completed()
+            break
+
+        #TODO: Detect obstacles
+        cubeObstacle = None
+        try:
+            # TODO: Detect more than one obstacle.
+            cubeObstacle = robot.world.wait_for_observed_light_cube(timeout=2)
+        except asyncio.TimeoutError:
+            print("No Cube obstacle was found")
+        if cubeObstacle is not None and cubeObstacle.object_id != 1:
+            xObstacle = int(cubeObstacle.pose.position.x / scale) + startX
+            yObstacle = int(cubeObstacle.pose.position.y / scale) + startY
+            print("Obstacle found:(", xObstacle, ",", yObstacle, ")")
+            addCubeObstacle(grid, (xObstacle, yObstacle))
+
+        #Use A* to find the path to cube
+        astar(grid, heuristic)
+
+        path = grid.getPath()
+        if len(path) >= 2:
+            movStart = path[0]
+            movEnd = path[1]
+            #robot.go_to_pose(Pose((movEnd[0] - movStart[0]) * scale, (movEnd[1] - movStart[1]) * scale, 0, angle_z=degrees(0)), relative_to_robot=True).wait_for_completed()
+            robotAngle = math.degrees(math.atan2(movEnd[1] - movStart[1], movEnd[0] - movStart[0]))
+            newRobotX = robot.pose.position.x + (movEnd[0] - movStart[0]) * scale
+            newRobotY = robot.pose.position.y + (movEnd[1] - movStart[1]) * scale
+            robot.go_to_pose(Pose(newRobotX, newRobotY, 0, angle_z=degrees(robotAngle)), relative_to_robot=False).wait_for_completed()
+
+def addCubeObstacle(grid, cubePosition):
+    for i in range(-1,2,1):
+        for j in range(-1,2,1):
+            obstacle = (cubePosition[0] + i, cubePosition[1] + j)
+            if grid.coordInBounds(obstacle):
+                grid.addObstacle(obstacle)
+
+# return angle always in range (-180, 180] in deg
+def normalizeAngle(heading):
+    while heading > 180:
+        heading -= 360
+    while heading <= -180:
+        heading += 360
+    return heading
 
 ######################## DO NOT MODIFY CODE BELOW THIS LINE ####################################
 

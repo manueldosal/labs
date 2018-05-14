@@ -207,8 +207,8 @@ def cozmoBehavior(robot: cozmo.robot.Robot):
             robot.go_to_pose(Pose(newRobotX, newRobotY, 0, angle_z=degrees(robotAngle)), relative_to_robot=False).wait_for_completed()
 
 def addCubeObstacle(grid, cubePosition):
-    for i in range(-1,2,1):
-        for j in range(-1,2,1):
+    for i in range(-2,3,1):
+        for j in range(-2,3,1):
             obstacle = (cubePosition[0] + i, cubePosition[1] + j)
             if grid.coordInBounds(obstacle):
                 grid.addObstacle(obstacle)

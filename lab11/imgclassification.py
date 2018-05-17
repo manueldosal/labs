@@ -8,6 +8,12 @@ import numpy as np
 import re
 from sklearn import svm, metrics
 from skimage import io, feature, filters, exposure, color
+import time
+from sklearn.svm import LinearSVC
+
+#TODO: Test with different values for: sigma, gamma
+#TODO: Test other filters: canny
+#TODO: test other learning algorithms: SVM
 
 class ImageClassifier:
     
@@ -34,34 +40,53 @@ class ImageClassifier:
 
     def extract_image_features(self, data):
         # Please do not modify the header above
-
         # extract feature vector from image data
+        print("Extracting features started.")
+        startTime = time.time()
 
-        ########################
-        ######## YOUR CODE HERE
-        ########################
+        feature_data = []
+        for image in data:
+            # The dimensions of image is: (240, 320, 3)
+            
+            #Convert image to two dimensions to extract features
+            newImage = color.rgb2gray(image)
+
+            # Use a feature extraction method
+            #newImage = feature.canny(newImage, sigma=2)
+
+            # Convert matrix to a one dimensional array
+            newImage = newImage.flatten()
+            feature_data.append(newImage)
         
+        print("Extracting features finished. Duration:", time.time() - startTime, "s")
+
         # Please do not modify the return type below
         return(feature_data)
 
     def train_classifier(self, train_data, train_labels):
         # Please do not modify the header above
-        
         # train model and save the trained model to self.classifier
-        
-        ########################
-        ######## YOUR CODE HERE
-        ########################
+        print("Training algorithm started")
+        startTime = time.time()
+
+        # self.classifier = svm.SVC(gamma=0.001)
+        # self.classifier.fit(train_data, train_labels)
+
+        self.classifier = LinearSVC()
+        self.classifier.fit(train_data, train_labels)
+
+        print("Training algorithm finished. Duration:", time.time() - startTime, "s")
 
     def predict_labels(self, data):
         # Please do not modify the header
-
         # predict labels of test data using trained model in self.classifier
         # the code below expects output to be stored in predicted_labels
-        
-        ########################
-        ######## YOUR CODE HERE
-        ########################
+        print("Predicting labels started")
+        startTime = time.time()
+
+        predicted_labels = self.classifier.predict(data)
+
+        print("Predicting labels finished. Duration:", time.time() - startTime, "s")
         
         # Please do not modify the return type below
         return predicted_labels
@@ -75,9 +100,18 @@ def main():
     (train_raw, train_labels) = img_clf.load_data_from_folder('./train/')
     (test_raw, test_labels) = img_clf.load_data_from_folder('./test/')
     
+    print("train_raw.shape:", train_raw.shape)
+    #train_raw.shape: (196, 240, 320, 3)
+
     # convert images into features
     train_data = img_clf.extract_image_features(train_raw)
     test_data = img_clf.extract_image_features(test_raw)
+
+    print("len(train_data):", len(train_data))
+    print("len(train_data[0]):", len(train_data[0]))
+    print("train_data[0].shape:", (train_data[0]).shape)
+    print("len(test_data[0]):", len(test_data[0]))
+    print("len(train_labels):", len(train_labels))
     
     # train model and test on training data
     img_clf.train_classifier(train_data, train_labels)
@@ -90,7 +124,7 @@ def main():
     
     # test model
     predicted_labels = img_clf.predict_labels(test_data)
-    print("\nTraining results")
+    print("\nTesting results")
     print("=============================")
     print("Confusion Matrix:\n",metrics.confusion_matrix(test_labels, predicted_labels))
     print("Accuracy: ", metrics.accuracy_score(test_labels, predicted_labels))

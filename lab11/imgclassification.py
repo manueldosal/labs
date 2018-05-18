@@ -54,6 +54,8 @@ class ImageClassifier:
             # Use a feature extraction method
             #newImage = feature.canny(newImage, sigma=2)
 
+            newImage = filters.gaussian(newImage, sigma=2)
+
             # Convert matrix to a one dimensional array
             newImage = newImage.flatten()
             feature_data.append(newImage)
@@ -91,6 +93,15 @@ class ImageClassifier:
         # Please do not modify the return type below
         return predicted_labels
 
+    def build_classifier(self):
+        # Read training data
+        (train_raw, train_labels) = self.load_data_from_folder('./train/')
+
+        # Convert images into features
+        train_data = self.extract_image_features(train_raw)
+    
+        # Train model
+        self.train_classifier(train_data, train_labels)
       
 def main():
 

@@ -93,7 +93,7 @@ class ImageClassifier:
         # Please do not modify the return type below
         return predicted_labels
 
-    def build_classifier(self):
+    def build_and_return_classifier(self):
         # Read training data
         (train_raw, train_labels) = self.load_data_from_folder('./train/')
 
@@ -102,6 +102,8 @@ class ImageClassifier:
     
         # Train model
         self.train_classifier(train_data, train_labels)
+
+        return self.classifier
       
 def main():
 

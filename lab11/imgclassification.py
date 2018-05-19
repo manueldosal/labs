@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ##############
-#### Your name:
+#### Your name: Manuel Dosal
 ##############
 
 import numpy as np
@@ -10,10 +10,6 @@ from sklearn import svm, metrics
 from skimage import io, feature, filters, exposure, color
 import time
 from sklearn.svm import LinearSVC
-
-#TODO: Test with different values for: sigma, gamma
-#TODO: Test other filters: canny
-#TODO: test other learning algorithms: SVM
 
 class ImageClassifier:
     
@@ -50,10 +46,6 @@ class ImageClassifier:
             
             #Convert image to two dimensions to extract features
             newImage = color.rgb2gray(image)
-
-            # Use a feature extraction method
-            #newImage = feature.canny(newImage, sigma=2)
-
             newImage = filters.gaussian(newImage, sigma=2)
 
             # Convert matrix to a one dimensional array
@@ -70,9 +62,6 @@ class ImageClassifier:
         # train model and save the trained model to self.classifier
         print("Training algorithm started")
         startTime = time.time()
-
-        # self.classifier = svm.SVC(gamma=0.001)
-        # self.classifier.fit(train_data, train_labels)
 
         self.classifier = LinearSVC()
         self.classifier.fit(train_data, train_labels)
@@ -113,18 +102,11 @@ def main():
     (train_raw, train_labels) = img_clf.load_data_from_folder('./train/')
     (test_raw, test_labels) = img_clf.load_data_from_folder('./test/')
     
-    print("train_raw.shape:", train_raw.shape)
     #train_raw.shape: (196, 240, 320, 3)
 
     # convert images into features
     train_data = img_clf.extract_image_features(train_raw)
     test_data = img_clf.extract_image_features(test_raw)
-
-    print("len(train_data):", len(train_data))
-    print("len(train_data[0]):", len(train_data[0]))
-    print("train_data[0].shape:", (train_data[0]).shape)
-    print("len(test_data[0]):", len(test_data[0]))
-    print("len(train_labels):", len(train_labels))
     
     # train model and test on training data
     img_clf.train_classifier(train_data, train_labels)

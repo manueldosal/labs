@@ -136,12 +136,6 @@ async def run(robot: cozmo.robot.Robot):
     #start particle filter
     pf = ParticleFilter(grid)
 
-    ###################
-
-    ############YOUR CODE HERE#################
-
-    ###################
-
 
 class CozmoThread(threading.Thread):
     

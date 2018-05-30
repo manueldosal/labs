@@ -64,8 +64,6 @@ class ValueIterationAgent(ValueEstimationAgent):
                 for action in mdp.getPossibleActions(state):
                     sum = 0
                     for (nextState, prob) in mdp.getTransitionStatesAndProbs(state, action):
-                        # TODO: Check if self.values[nextState] is actually zero when starting
-                        # TODO: Maybe check that nextState is not a terminal state
                         sum += prob * (mdp.getReward(state, action, nextState) + discount * oldValues[nextState])
                     if maxSum is None or sum > maxSum:
                         maxSum = sum
@@ -118,13 +116,16 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        
         finalAction = None
-        newState = None
+        maxSum = None
         for action in self.mdp.getPossibleActions(state):
+            sum = 0
             for (nextState, prob) in self.mdp.getTransitionStatesAndProbs(state, action):
-                if(finalAction == None or self.values[nextState] > self.values[newState]):
-                    finalAction = action
-                    newState = nextState
+                sum += prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
+            if maxSum is None or sum > maxSum:
+                maxSum = sum
+                finalAction = action
         
         return finalAction
 

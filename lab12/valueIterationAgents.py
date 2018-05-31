@@ -49,10 +49,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         #values are numbers in squares
         #Q-values are numbers in square quarters
 
-        # TODO: Run value iteration on mdp for an amount of iterations
         for i in range(iterations):
-
-            #TODO: Maybe I have to create a copy of the dictionary to use in self.values[nextState]
             oldValues = util.Counter()
             for stat in self.values:
                 oldValues[stat] = self.values[stat]
@@ -69,22 +66,6 @@ class ValueIterationAgent(ValueEstimationAgent):
                         maxSum = sum
                         finalAction = action
                 self.values[state] = maxSum if maxSum is not None else 0
-                #print("SETTING NEW VALUE FOR STATE", state, ":", self.values[state])
-
-        #mdp.getStates()
-        
-        # 'north','west','south','east'
-        #mdp.getPossibleActions(state)
-
-        # Returns list of (nextState, probability) pairs
-        #mdp.getTransitionStatesAndProbs(state, action)
-
-        # he reward depends only on the state being departed 
-        #mdp.getReward(state, action, nextState)
-
-        # Only the TERMINAL_STATE state is *actually* a terminal state
-        #mdp.isTerminal(state)
-
 
 
     def getValue(self, state):
@@ -116,7 +97,7 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        
+
         finalAction = None
         maxSum = None
         for action in self.mdp.getPossibleActions(state):

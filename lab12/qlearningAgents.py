@@ -76,7 +76,7 @@ class QLearningAgent(ReinforcementAgent):
         maxQValue = None
         for action in actions:
             if maxQValue == None or self.getQValue(state, action) > maxQValue:
-                maxQValue = self.qValues[(state, action)]
+                maxQValue = self.getQValue(state, action)
 
         return maxQValue if maxQValue is not None else 0.0
 
@@ -96,8 +96,10 @@ class QLearningAgent(ReinforcementAgent):
         maxAction = None
         for action in actions:
             if maxQValue == None or self.getQValue(state, action) > maxQValue:
-                maxQValue = self.qValues[(state, action)]
+                maxQValue = self.getQValue(state, action)
                 maxAction = action
+            elif self.getQValue(state, action) == maxQValue:
+                maxAction = action if util.flipCoin(0.5) else maxAction
 
         return maxAction
 
@@ -113,7 +115,7 @@ class QLearningAgent(ReinforcementAgent):
           HINT: You might want to use util.flipCoin(prob)
           HINT: To pick randomly from a list, use random.choice(list)
         """
-        
+
         # Pick Action
         legalActions = self.getLegalActions(state)
 
@@ -138,9 +140,10 @@ class QLearningAgent(ReinforcementAgent):
 
         #Find the maximum Q value for nextState and action
         maxQValue = None
-        for (tempState, tempAction) in self.qValues:
-            if tempState == nextState and (maxQValue == None or self.qValues[(tempState, tempAction)] > maxQValue):
-                maxQValue = self.qValues[(tempState, tempAction)]
+        actionsNextState = self.getLegalActions(nextState)
+        for actionNextState in actionsNextState:
+            if maxQValue == None or self.qValues[(nextState, actionNextState)] > maxQValue:
+                maxQValue = self.qValues[(nextState, actionNextState)]
 
         newQValue = self.qValues[(state, action)] + self.alpha * (reward + self.discount * (maxQValue if maxQValue is not None else 0.0) - self.qValues[(state, action)])
         self.qValues[(state, action)] = round(newQValue, 10)

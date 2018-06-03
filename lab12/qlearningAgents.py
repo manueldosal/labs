@@ -69,8 +69,6 @@ class QLearningAgent(ReinforcementAgent):
           terminal state, you should return a value of 0.0.
         """
         "*** YOUR CODE HERE ***"
-        #TODO: Implement this
-
         actions = self.getLegalActions(state)
 
         maxQValue = None
@@ -87,9 +85,6 @@ class QLearningAgent(ReinforcementAgent):
           you should return None.
         """
         "*** YOUR CODE HERE ***"
-        #TODO: Implement this
-        #TODO: Break ties randomly
-
         actions = self.getLegalActions(state)
 
         maxQValue = None
@@ -136,8 +131,6 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
-        #TODO: Implement this
-
         #Find the maximum Q value for nextState and action
         maxQValue = None
         actionsNextState = self.getLegalActions(nextState)
@@ -146,7 +139,7 @@ class QLearningAgent(ReinforcementAgent):
                 maxQValue = self.qValues[(nextState, actionNextState)]
 
         newQValue = self.qValues[(state, action)] + self.alpha * (reward + self.discount * (maxQValue if maxQValue is not None else 0.0) - self.qValues[(state, action)])
-        self.qValues[(state, action)] = round(newQValue, 10)
+        self.qValues[(state, action)] = newQValue
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
